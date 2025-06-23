@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: fingateway
+
+# FMP API Configuration for fallback
+fmp:
+  api:
+    base-url: https://financialmodelingprep.com/stable
+    api-key: ${FMP_API_KEY:}
+
+logging:
+  level:
+    reactor:
+      netty: DEBUG
+    org:
+      springframework:
+        cloud:
+          gateway: DEBUG
+    com:
+      rainston:
+        fingateway: DEBUG

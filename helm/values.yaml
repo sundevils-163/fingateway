@@ -1,0 +1,15 @@
+replicaCount: 1
+
+image:
+  repository: junzhutx/fingateway
+  tag: "0.0.17"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  hostname: fingateway.lan
+  ingressClassName: nginx
