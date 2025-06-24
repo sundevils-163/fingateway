@@ -1,11 +1,18 @@
 spring:
   application:
     name: fingateway
-
+  http:
+    codecs:
+      log-request-details: true
+      log-response-details: true
+  webflux:
+    codec:
+      max-in-memory-size: 10MB
 # FMP API Configuration for fallback
 fmp:
   api:
     base-url: https://financialmodelingprep.com/stable
+    v3-url: https://financialmodelingprep.com/api/v3
     api-key: ${FMP_API_KEY:}
 
 logging:

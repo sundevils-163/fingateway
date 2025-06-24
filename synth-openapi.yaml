@@ -1,0 +1,1627 @@
+openapi: 3.0.3
+info:
+  title: Synth API
+  description: |
+    The Synth API provides comprehensive financial data and tools for fintech applications.
+    Our goal is to make it as simple as possible to get up and running with various tools 
+    Synth offers around fintech data.
+    
+    You can interact with the API through HTTP requests from any language.
+  version: 1.0.0
+  contact:
+    name: Synth Support
+    url: https://synthfinance.com
+  license:
+    name: Proprietary
+    url: https://synthfinance.com/terms
+
+servers:
+  - url: https://api.synthfinance.com
+    description: Production API server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Stock Exchanges
+  /exchanges:
+    get:
+      summary: List Exchanges
+      description: Retrieve a list of all available stock exchanges
+      operationId: listExchanges
+      tags:
+        - Stock Exchanges
+      parameters:
+        - name: limit
+          in: query
+          description: Number of exchanges to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of exchanges to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of exchanges retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /exchanges/{exchange_id}:
+    get:
+      summary: Retrieve Exchange
+      description: Get detailed information about a specific exchange
+      operationId: retrieveExchange
+      tags:
+        - Stock Exchanges
+      parameters:
+        - name: exchange_id
+          in: path
+          description: The exchange identifier (e.g., nyse, nasdaq)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Exchange details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeResponse'
+        '404':
+          description: Exchange not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Enrichment
+  /enrich/transactions:
+    get:
+      summary: Enrich Transactions
+      description: Enrich transaction data with additional financial information
+      operationId: enrichTransactions
+      tags:
+        - Enrichment
+      parameters:
+        - name: transactions
+          in: query
+          description: JSON array of transaction objects to enrich
+          required: true
+          schema:
+            type: string
+            example: '[{"description":"AAPL purchase","amount":150.00}]'
+      responses:
+        '200':
+          description: Transactions enriched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichmentResponse'
+        '400':
+          description: Invalid transaction data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Currencies
+  /currencies:
+    get:
+      summary: List Currencies
+      description: Retrieve a list of all supported currencies
+      operationId: listCurrencies
+      tags:
+        - Currencies
+      parameters:
+        - name: limit
+          in: query
+          description: Number of currencies to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of currencies to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of currencies retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /currencies/{currency_code}:
+    get:
+      summary: Retrieve Currency
+      description: Get detailed information about a specific currency
+      operationId: retrieveCurrency
+      tags:
+        - Currencies
+      parameters:
+        - name: currency_code
+          in: path
+          description: The currency code (e.g., USD, EUR, GBP)
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+      responses:
+        '200':
+          description: Currency details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyResponse'
+        '404':
+          description: Currency not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Exchange Rates
+  /rates/live:
+    get:
+      summary: Live Rates
+      description: Get current exchange rates
+      operationId: getLiveRates
+      tags:
+        - Exchange Rates
+      parameters:
+        - name: base
+          in: query
+          description: Base currency code
+          required: false
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+            default: USD
+        - name: symbols
+          in: query
+          description: Comma-separated list of target currency codes
+          required: false
+          schema:
+            type: string
+            example: EUR,GBP,JPY
+      responses:
+        '200':
+          description: Live exchange rates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveRatesResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /rates/historical:
+    get:
+      summary: Historical Rates
+      description: Get historical exchange rates for a specific date
+      operationId: getHistoricalRates
+      tags:
+        - Exchange Rates
+      parameters:
+        - name: date
+          in: query
+          description: Date for historical rates (YYYY-MM-DD format)
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: base
+          in: query
+          description: Base currency code
+          required: false
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+            default: USD
+        - name: symbols
+          in: query
+          description: Comma-separated list of target currency codes
+          required: false
+          schema:
+            type: string
+            example: EUR,GBP,JPY
+      responses:
+        '200':
+          description: Historical exchange rates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalRatesResponse'
+        '400':
+          description: Invalid date format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /rates/historical/range:
+    get:
+      summary: Historical Range Rates
+      description: Get historical exchange rates for a date range
+      operationId: getHistoricalRangeRates
+      tags:
+        - Exchange Rates
+      parameters:
+        - name: start_date
+          in: query
+          description: Start date for range (YYYY-MM-DD format)
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: End date for range (YYYY-MM-DD format)
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: base
+          in: query
+          description: Base currency code
+          required: false
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+            default: USD
+        - name: symbols
+          in: query
+          description: Comma-separated list of target currency codes
+          required: false
+          schema:
+            type: string
+            example: EUR,GBP,JPY
+      responses:
+        '200':
+          description: Historical range rates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalRangeRatesResponse'
+        '400':
+          description: Invalid date format or range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /rates/convert:
+    get:
+      summary: Convert Amount
+      description: Convert an amount from one currency to another
+      operationId: convertAmount
+      tags:
+        - Exchange Rates
+      parameters:
+        - name: amount
+          in: query
+          description: Amount to convert
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: from
+          in: query
+          description: Source currency code
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+        - name: to
+          in: query
+          description: Target currency code
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}$'
+        - name: date
+          in: query
+          description: Date for conversion (YYYY-MM-DD format, defaults to current date)
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Amount converted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Insider Trades
+  /insider-trades:
+    get:
+      summary: List Insider Trades
+      description: Retrieve insider trading data
+      operationId: listInsiderTrades
+      tags:
+        - Insider Trades
+      parameters:
+        - name: symbol
+          in: query
+          description: Stock symbol to filter by
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of trades to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of trades to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Insider trades retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsiderTradesResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Tickers
+  /tickers:
+    get:
+      summary: List Tickers
+      description: Retrieve a list of available stock tickers
+      operationId: listTickers
+      tags:
+        - Tickers
+      parameters:
+        - name: exchange
+          in: query
+          description: Filter by exchange
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of tickers to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of tickers to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of tickers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickers/{symbol}:
+    get:
+      summary: Retrieve Ticker
+      description: Get detailed information about a specific ticker
+      operationId: retrieveTicker
+      tags:
+        - Tickers
+      parameters:
+        - name: symbol
+          in: path
+          description: The stock symbol (e.g., AAPL, MSFT)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ticker details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerResponse'
+        '404':
+          description: Ticker not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickers/{symbol}/related:
+    get:
+      summary: Related Tickers
+      description: Get related tickers for a specific symbol
+      operationId: getRelatedTickers
+      tags:
+        - Tickers
+      parameters:
+        - name: symbol
+          in: path
+          description: The stock symbol
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of related tickers to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Related tickers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatedTickersResponse'
+        '404':
+          description: Ticker not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickers/{symbol}/open-close:
+    get:
+      summary: Open/Close Prices
+      description: Get historical open and close prices for a ticker
+      operationId: getOpenClosePrices
+      tags:
+        - Tickers
+      parameters:
+        - name: symbol
+          in: path
+          description: The stock symbol
+          required: true
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: Start date for data (YYYY-MM-DD format)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: End date for data (YYYY-MM-DD format)
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          description: Number of data points to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: Open/close prices retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenCloseResponse'
+        '404':
+          description: Ticker not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickers/{symbol}/realtime:
+    get:
+      summary: Real-Time Prices
+      description: Get real-time price data for a ticker
+      operationId: getRealTimePrices
+      tags:
+        - Tickers
+      parameters:
+        - name: symbol
+          in: path
+          description: The stock symbol
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Real-time prices retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealTimeResponse'
+        '404':
+          description: Ticker not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /search:
+    get:
+      summary: Search Tickers
+      description: Search for tickers by name or symbol
+      operationId: searchTickers
+      tags:
+        - Tickers
+      parameters:
+        - name: q
+          in: query
+          description: Search query (ticker symbol or company name)
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: limit
+          in: query
+          description: Number of results to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid search query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Institutions
+  /institutions:
+    get:
+      summary: Search Institutions
+      description: Search for financial institutions
+      operationId: searchInstitutions
+      tags:
+        - Institutions
+      parameters:
+        - name: q
+          in: query
+          description: Search query (institution name)
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: limit
+          in: query
+          description: Number of results to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Institution search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionSearchResponse'
+        '400':
+          description: Invalid search query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /institutions/{institution_id}:
+    get:
+      summary: Retrieve Institution
+      description: Get detailed information about a specific institution
+      operationId: retrieveInstitution
+      tags:
+        - Institutions
+      parameters:
+        - name: institution_id
+          in: path
+          description: The institution identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Institution details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionResponse'
+        '404':
+          description: Institution not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Logos
+  /logos/payment-methods/credit-cards:
+    get:
+      summary: Credit Card Logos
+      description: Get logos for credit card payment methods
+      operationId: getCreditCardLogos
+      tags:
+        - Logos
+      parameters:
+        - name: limit
+          in: query
+          description: Number of logos to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Credit card logos retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /logos/payment-methods/wallets:
+    get:
+      summary: Wallet Logos
+      description: Get logos for wallet payment methods
+      operationId: getWalletLogos
+      tags:
+        - Logos
+      parameters:
+        - name: limit
+          in: query
+          description: Number of logos to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Wallet logos retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /logos/websites:
+    get:
+      summary: Website Logos
+      description: Get logos for websites
+      operationId: getWebsiteLogos
+      tags:
+        - Logos
+      parameters:
+        - name: limit
+          in: query
+          description: Number of logos to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Website logos retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /logos/stock-tickers:
+    get:
+      summary: Stock Ticker Logos
+      description: Get logos for stock tickers
+      operationId: getStockTickerLogos
+      tags:
+        - Logos
+      parameters:
+        - name: symbol
+          in: query
+          description: Stock symbol to get logo for
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of logos to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Stock ticker logos retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoListResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # User
+  /user:
+    get:
+      summary: Get User Information
+      description: Get information about the authenticated user
+      operationId: getUserInfo
+      tags:
+        - User
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized - Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Your Synth API key. Include it in the Authorization header as:
+        `Authorization: Bearer YOUR_API_KEY`
+        
+        Remember that your API key is a secret! Do not share it with others or expose it 
+        in any client-side code (browsers, apps). Production requests must be routed through 
+        your own backend server where your API key can be securely loaded from an environment 
+        variable or key management service.
+
+  schemas:
+    # Common response wrapper
+    BaseResponse:
+      type: object
+      properties:
+        data:
+          description: The actual response data
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+        - data
+        - meta
+
+    Meta:
+      type: object
+      properties:
+        credits_used:
+          type: integer
+          description: Number of API credits used for this request
+          example: 1
+        credits_remaining:
+          type: integer
+          description: Number of API credits remaining
+          example: 219
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "unauthorized"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid API key"
+        details:
+          type: object
+          description: Additional error details
+      required:
+        - error
+        - message
+
+    # Exchange schemas
+    Exchange:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique exchange identifier
+          example: "157946c5-fcae-4578-b5a3-6a3261760fbe"
+        name:
+          type: string
+          description: Exchange name
+          example: "Nyse Arca"
+        acronym:
+          type: string
+          description: Exchange acronym
+          example: "NYSE"
+        mic_code:
+          type: string
+          description: Market Identifier Code
+          example: "ARCX"
+        city:
+          type: string
+          description: City where exchange is located
+          example: "New York"
+        country_code:
+          type: string
+          description: Country code
+          example: "US"
+        kind:
+          type: string
+          description: Type of exchange
+          example: "segment"
+        timezone:
+          type: string
+          description: Exchange timezone
+          example: "America/New_York"
+        currency:
+          type: string
+          description: Primary currency
+          example: "USD"
+        links:
+          type: object
+          properties:
+            website:
+              type: string
+              format: uri
+              description: Exchange website URL
+              example: "https://www.nyse.com"
+      required:
+        - id
+        - name
+        - acronym
+
+    ExchangeListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Exchange'
+
+    ExchangeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Exchange'
+
+    # Currency schemas
+    Currency:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Currency code
+          example: "USD"
+        name:
+          type: string
+          description: Currency name
+          example: "US Dollar"
+        symbol:
+          type: string
+          description: Currency symbol
+          example: "$"
+        decimal_places:
+          type: integer
+          description: Number of decimal places
+          example: 2
+      required:
+        - code
+        - name
+
+    CurrencyListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Currency'
+
+    CurrencyResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Currency'
+
+    # Exchange Rate schemas
+    ExchangeRate:
+      type: object
+      properties:
+        base:
+          type: string
+          description: Base currency code
+          example: "USD"
+        target:
+          type: string
+          description: Target currency code
+          example: "EUR"
+        rate:
+          type: number
+          format: float
+          description: Exchange rate
+          example: 0.85
+        timestamp:
+          type: string
+          format: date-time
+          description: Rate timestamp
+          example: "2023-12-01T10:30:00Z"
+
+    LiveRatesResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExchangeRate'
+
+    HistoricalRatesResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExchangeRate'
+
+    HistoricalRangeRatesResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExchangeRate'
+
+    ConversionResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  description: Original amount
+                  example: 100.00
+                from:
+                  type: string
+                  description: Source currency
+                  example: "USD"
+                to:
+                  type: string
+                  description: Target currency
+                  example: "EUR"
+                converted_amount:
+                  type: number
+                  format: float
+                  description: Converted amount
+                  example: 85.00
+                rate:
+                  type: number
+                  format: float
+                  description: Exchange rate used
+                  example: 0.85
+                date:
+                  type: string
+                  format: date
+                  description: Conversion date
+                  example: "2023-12-01"
+
+    # Ticker schemas
+    Ticker:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Stock symbol
+          example: "AAPL"
+        name:
+          type: string
+          description: Company name
+          example: "Apple Inc."
+        exchange:
+          type: string
+          description: Exchange where stock is listed
+          example: "NASDAQ"
+        currency:
+          type: string
+          description: Trading currency
+          example: "USD"
+        market_cap:
+          type: number
+          format: float
+          description: Market capitalization
+          example: 2000000000000
+        price:
+          type: number
+          format: float
+          description: Current stock price
+          example: 150.00
+        change:
+          type: number
+          format: float
+          description: Price change from previous close
+          example: 2.50
+        change_percent:
+          type: number
+          format: float
+          description: Percentage change
+          example: 1.67
+        volume:
+          type: integer
+          description: Trading volume
+          example: 50000000
+        pe_ratio:
+          type: number
+          format: float
+          description: Price-to-earnings ratio
+          example: 25.5
+        dividend_yield:
+          type: number
+          format: float
+          description: Dividend yield percentage
+          example: 0.5
+      required:
+        - symbol
+        - name
+
+    TickerListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Ticker'
+
+    TickerResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Ticker'
+
+    RelatedTickersResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Ticker'
+
+    OpenCloseData:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: Trading date
+          example: "2023-12-01"
+        open:
+          type: number
+          format: float
+          description: Opening price
+          example: 148.50
+        close:
+          type: number
+          format: float
+          description: Closing price
+          example: 150.00
+        high:
+          type: number
+          format: float
+          description: Highest price during the day
+          example: 151.20
+        low:
+          type: number
+          format: float
+          description: Lowest price during the day
+          example: 147.80
+        volume:
+          type: integer
+          description: Trading volume
+          example: 50000000
+
+    OpenCloseResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OpenCloseData'
+
+    RealTimeData:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Stock symbol
+          example: "AAPL"
+        price:
+          type: number
+          format: float
+          description: Current price
+          example: 150.00
+        change:
+          type: number
+          format: float
+          description: Price change
+          example: 2.50
+        change_percent:
+          type: number
+          format: float
+          description: Percentage change
+          example: 1.67
+        volume:
+          type: integer
+          description: Trading volume
+          example: 50000000
+        timestamp:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2023-12-01T16:00:00Z"
+
+    RealTimeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RealTimeData'
+
+    SearchResult:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Stock symbol
+          example: "AAPL"
+        name:
+          type: string
+          description: Company name
+          example: "Apple Inc."
+        exchange:
+          type: string
+          description: Exchange
+          example: "NASDAQ"
+        type:
+          type: string
+          description: Security type
+          example: "Common Stock"
+
+    SearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/SearchResult'
+
+    # Insider Trade schemas
+    InsiderTrade:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Stock symbol
+          example: "AAPL"
+        insider_name:
+          type: string
+          description: Name of the insider
+          example: "Tim Cook"
+        title:
+          type: string
+          description: Insider's title
+          example: "CEO"
+        trade_type:
+          type: string
+          description: Type of trade (buy/sell)
+          example: "buy"
+        shares:
+          type: integer
+          description: Number of shares traded
+          example: 1000
+        price:
+          type: number
+          format: float
+          description: Price per share
+          example: 150.00
+        value:
+          type: number
+          format: float
+          description: Total value of trade
+          example: 150000.00
+        date:
+          type: string
+          format: date
+          description: Trade date
+          example: "2023-12-01"
+
+    InsiderTradesResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/InsiderTrade'
+
+    # Institution schemas
+    Institution:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Institution identifier
+          example: "inst_123"
+        name:
+          type: string
+          description: Institution name
+          example: "BlackRock Inc."
+        type:
+          type: string
+          description: Institution type
+          example: "Investment Management"
+        country:
+          type: string
+          description: Country of operation
+          example: "US"
+        assets_under_management:
+          type: number
+          format: float
+          description: Assets under management
+          example: 1000000000000
+
+    InstitutionSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Institution'
+
+    InstitutionResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Institution'
+
+    # Logo schemas
+    Logo:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Logo identifier
+          example: "logo_123"
+        name:
+          type: string
+          description: Logo name
+          example: "Apple Logo"
+        url:
+          type: string
+          format: uri
+          description: Logo URL
+          example: "https://example.com/apple-logo.png"
+        format:
+          type: string
+          description: Image format
+          example: "PNG"
+        dimensions:
+          type: object
+          properties:
+            width:
+              type: integer
+              description: Image width in pixels
+              example: 200
+            height:
+              type: integer
+              description: Image height in pixels
+              example: 100
+
+    LogoListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Logo'
+
+    # User schema
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User identifier
+          example: "user_123"
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: "user@example.com"
+        plan:
+          type: string
+          description: Subscription plan
+          example: "pro"
+        credits_remaining:
+          type: integer
+          description: Available API credits
+          example: 1000
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation date
+          example: "2023-01-01T00:00:00Z"
+
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/User'
+
+    # Enrichment schema
+    EnrichmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  original:
+                    type: object
+                    description: Original transaction data
+                  enriched:
+                    type: object
+                    description: Enriched transaction data with financial context
+                  confidence:
+                    type: number
+                    format: float
+                    description: Confidence score for enrichment
+                    example: 0.95
+
+tags:
+  - name: Stock Exchanges
+    description: Operations for retrieving stock exchange information
+  - name: Enrichment
+    description: Operations for enriching transaction data
+  - name: Currencies
+    description: Operations for retrieving currency information
+  - name: Exchange Rates
+    description: Operations for retrieving exchange rates and currency conversion
+  - name: Insider Trades
+    description: Operations for retrieving insider trading data
+  - name: Tickers
+    description: Operations for retrieving stock ticker information and data
+  - name: Institutions
+    description: Operations for retrieving financial institution information
+  - name: Logos
+    description: Operations for retrieving various types of logos
+  - name: User
+    description: Operations for retrieving user account information 

@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: junzhutx/fingateway
-  tag: "0.0.17"
+  tag: "0.0.24"
   pullPolicy: Always
 
 service:

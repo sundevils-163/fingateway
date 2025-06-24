@@ -60,7 +60,7 @@ public class ResponseTransformerService {
             
             ArrayNode dataArray = synthResponse.putArray("prices");
             
-            if (fmpNode.has("historical")) {
+            if (hasValidValue(fmpNode, "historical")) {
                 JsonNode historicalArray = fmpNode.get("historical");
                 if (historicalArray.isArray()) {
                     for (JsonNode day : historicalArray) {
@@ -101,68 +101,68 @@ public class ResponseTransformerService {
             ObjectNode address = data.putObject("address");
             
             // Map FMP fields to Synth format
-            if (profileData.has("symbol")) {
+            if (hasValidValue(profileData, "symbol")) {
                 data.put("ticker", profileData.get("symbol").asText());
             }
-            if (profileData.has("companyName")) {
+            if (hasValidValue(profileData, "companyName")) {
                 data.put("name", profileData.get("companyName").asText());
             }
-            if (profileData.has("currency")) {
+            if (hasValidValue(profileData, "currency")) {
                 data.put("currency", profileData.get("currency").asText());
             }
-            if (profileData.has("cik")) {
+            if (hasValidValue(profileData, "cik")) {
                 data.put("cik", profileData.get("cik").asText());
             }
-            if (profileData.has("changes")) {
+            if (hasValidValue(profileData, "changes")) {
                 data.put("change", profileData.get("changes").asDouble());
             }
-            if (profileData.has("marketCap")) {
+            if (hasValidValue(profileData, "marketCap")) {
                 data.put("marketCap", profileData.get("marketCap").asLong());
             }
-            if (profileData.has("sector")) {
+            if (hasValidValue(profileData, "sector")) {
                 data.put("sector", profileData.get("sector").asText());
             }
-            if (profileData.has("industry")) {
+            if (hasValidValue(profileData, "industry")) {
                 data.put("industry", profileData.get("industry").asText());
             }
-            if (profileData.has("description")) {
+            if (hasValidValue(profileData, "description")) {
                 data.put("description", profileData.get("description").asText());
             }
-            if (profileData.has("website")) {
+            if (hasValidValue(profileData, "website")) {
                 data.put("website", profileData.get("website").asText());
             }
-            if (profileData.has("ceo")) {
+            if (hasValidValue(profileData, "ceo")) {
                 data.put("ceo", profileData.get("ceo").asText());
             }
-            if (profileData.has("fullTimeEmployees")) {
+            if (hasValidValue(profileData, "fullTimeEmployees")) {
                 data.put("total_employees", profileData.get("fullTimeEmployees").asInt());
             }
-            if (profileData.has("phone")) {
+            if (hasValidValue(profileData, "phone")) {
                 data.put("phone", profileData.get("phone").asText());
             }
 
             // market data
-            if (profileData.has("price")) {
+            if (hasValidValue(profileData, "price")) {
                 marketData.put("close_today", profileData.get("price").asText());
             }
-            if (profileData.has("volume")) {
+            if (hasValidValue(profileData, "volume")) {
                 marketData.put("volume_today", profileData.get("volume").asText());
             }
 
             // address
-            if (profileData.has("address")) {
+            if (hasValidValue(profileData, "address")) {
                 address.put("address_line1", profileData.get("address").asText());
             }
-            if (profileData.has("city")) {
+            if (hasValidValue(profileData, "city")) {
                 address.put("city", profileData.get("city").asText());
             }
-            if (profileData.has("country")) {
+            if (hasValidValue(profileData, "country")) {
                 address.put("country", profileData.get("country").asText());
             }
-            if (profileData.has("zip")) {
+            if (hasValidValue(profileData, "zip")) {
                 address.put("postal_code", profileData.get("zip").asText());
             }
-            if (profileData.has("state")) {
+            if (hasValidValue(profileData, "state")) {
                 address.put("state", profileData.get("state").asText());
             }
             
@@ -189,55 +189,55 @@ public class ResponseTransformerService {
             ObjectNode data = synthResponse.putObject("data");
             
             // Map FMP fields to Synth format
-            if (quoteData.has("price")) {
+            if (hasValidValue(quoteData, "price")) {
                 data.put("price", quoteData.get("price").asDouble());
             }
-            if (quoteData.has("changes")) {
+            if (hasValidValue(quoteData, "changes")) {
                 data.put("change", quoteData.get("changes").asDouble());
             }
-            if (quoteData.has("changePercent")) {
+            if (hasValidValue(quoteData, "changePercent")) {
                 data.put("changePercent", quoteData.get("changePercent").asDouble());
             }
-            if (quoteData.has("dayLow")) {
+            if (hasValidValue(quoteData, "dayLow")) {
                 data.put("dayLow", quoteData.get("dayLow").asDouble());
             }
-            if (quoteData.has("dayHigh")) {
+            if (hasValidValue(quoteData, "dayHigh")) {
                 data.put("dayHigh", quoteData.get("dayHigh").asDouble());
             }
-            if (quoteData.has("yearLow")) {
+            if (hasValidValue(quoteData, "yearLow")) {
                 data.put("yearLow", quoteData.get("yearLow").asDouble());
             }
-            if (quoteData.has("yearHigh")) {
+            if (hasValidValue(quoteData, "yearHigh")) {
                 data.put("yearHigh", quoteData.get("yearHigh").asDouble());
             }
-            if (quoteData.has("marketCap")) {
+            if (hasValidValue(quoteData, "marketCap")) {
                 data.put("marketCap", quoteData.get("marketCap").asLong());
             }
-            if (quoteData.has("volume")) {
+            if (hasValidValue(quoteData, "volume")) {
                 data.put("volume", quoteData.get("volume").asLong());
             }
-            if (quoteData.has("avgVolume")) {
+            if (hasValidValue(quoteData, "avgVolume")) {
                 data.put("avgVolume", quoteData.get("avgVolume").asLong());
             }
-            if (quoteData.has("open")) {
+            if (hasValidValue(quoteData, "open")) {
                 data.put("open", quoteData.get("open").asDouble());
             }
-            if (quoteData.has("previousClose")) {
+            if (hasValidValue(quoteData, "previousClose")) {
                 data.put("previousClose", quoteData.get("previousClose").asDouble());
             }
-            if (quoteData.has("eps")) {
+            if (hasValidValue(quoteData, "eps")) {
                 data.put("eps", quoteData.get("eps").asDouble());
             }
-            if (quoteData.has("pe")) {
+            if (hasValidValue(quoteData, "pe")) {
                 data.put("pe", quoteData.get("pe").asDouble());
             }
-            if (quoteData.has("earningsAnnouncement")) {
+            if (hasValidValue(quoteData, "earningsAnnouncement")) {
                 data.put("earningsAnnouncement", quoteData.get("earningsAnnouncement").asText());
             }
-            if (quoteData.has("sharesOutstanding")) {
+            if (hasValidValue(quoteData, "sharesOutstanding")) {
                 data.put("sharesOutstanding", quoteData.get("sharesOutstanding").asLong());
             }
-            if (quoteData.has("timestamp")) {
+            if (hasValidValue(quoteData, "timestamp")) {
                 data.put("timestamp", quoteData.get("timestamp").asLong());
             }
             
@@ -259,19 +259,19 @@ public class ResponseTransformerService {
                 for (JsonNode result : fmpNode) {
                     ObjectNode resultData = resultsArray.addObject();
                     
-                    if (result.has("symbol")) {
+                    if (hasValidValue(result, "symbol")) {
                         resultData.put("symbol", result.get("symbol").asText());
                     }
-                    if (result.has("name")) {
+                    if (hasValidValue(result, "name")) {
                         resultData.put("name", result.get("name").asText());
                     }
-                    if (result.has("currency")) {
+                    if (hasValidValue(result, "currency")) {
                         resultData.put("currency", result.get("currency").asText());
                     }
-                    if (result.has("stockExchange")) {
+                    if (hasValidValue(result, "stockExchange")) {
                         resultData.put("exchange", result.get("stockExchange").asText());
                     }
-                    if (result.has("exchangeShortName")) {
+                    if (hasValidValue(result, "exchangeShortName")) {
                         resultData.put("exchangeShort", result.get("exchangeShortName").asText());
                     }
                 }
@@ -291,5 +291,9 @@ public class ResponseTransformerService {
             return parts[2];
         }
         return "UNKNOWN";
+    }
+
+    private boolean hasValidValue(JsonNode node, String field) {
+        return node.has(field) && !node.get(field).isNull();
     }
 } 

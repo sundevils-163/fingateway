@@ -16,6 +16,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -36,8 +37,15 @@ public class SynthFallbackFilter extends AbstractGatewayFilterFactory<SynthFallb
         super(Config.class);
         this.fmpFallbackService = fmpFallbackService;
         this.responseTransformerService = responseTransformerService;
+        
+        // Configure WebClient with larger buffer size for handling big responses
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024)) // 10MB buffer
+                .build();
+        
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.synthfinance.com")
+                .exchangeStrategies(exchangeStrategies)
                 .build();
     }
     
@@ -100,7 +108,7 @@ public class SynthFallbackFilter extends AbstractGatewayFilterFactory<SynthFallb
                 return requestSpec.retrieve()
                         .bodyToMono(String.class)
                         .flatMap(synthResponse -> {
-                            log.info("Synth API call successful for endpoint: {}", endpoint);
+                            log.info("Synth API call successful for endpoint: {}, response: {}", endpoint, synthResponse);
                             return writeResponse(exchange, HttpStatus.OK, synthResponse);
                         })
                         .onErrorResume(error -> {
